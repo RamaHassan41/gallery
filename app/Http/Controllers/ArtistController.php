@@ -10,6 +10,8 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\EditProfileRequest;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmailVerificationMail;
 
 class ArtistController extends Controller
 {
@@ -19,6 +21,7 @@ class ArtistController extends Controller
             'name'=>$request->name,
             'email'=>$request->email,
             'password'=>$request->password,
+            'code'=>rand(100000,999999),
         ]);
         $credentials=['email'=>$request->email,'password'=>$request->password];
         $token=JWTAuth::fromUser($artist);
@@ -28,7 +31,8 @@ class ArtistController extends Controller
         $artist->favourite()->create([
             'user_type'=>'App\\Models\\Artist',
         ]);
-        return $this->sendResponse([$artist,'Register is done successfully'],200);
+        Mail::to($artist->email)->send(new EmailVerificationMail($artist->name,$artist->code));
+        return $this->sendResponse([$artist,'Register is done successfully. Email verification code is sent to your email'],200);
     }
 
     public function artistEditProfile(EditProfileRequest $request){
@@ -59,13 +63,22 @@ class ArtistController extends Controller
         if(!$token)
             return $this->sendError('Account is Not found',404);
         $artist=Auth::guard('artist_api')->user();
+        $artist->email_verified_at=null;
+        $artist->code=rand(100000, 999999);
+        $artist->save();
         $artist->token=$token;
-        return $this->sendResponse([$artist,'Login id done successfully'],200);
+        // $artist->token=$token;
+        // $artist->code=rand(100000,999999);
+        Mail::to($artist->email)->send(new EmailVerificationMail($artist->name,$artist->code));
+        return $this->sendResponse([$artist,'Login id done successfully. Email verification code is sent to your email'],200);
     }
 
     public function artistLogout(Request $request){
         $token=$request->bearerToken();
         if($token){
+            // $artist=Auth::guard('artist_api')->user();
+            // $artist->email_verified_at=null;
+            // $artist->save();
             JWTAuth::setToken($token)->invalidate();
             return $this->sendResponse('Logout is done successfully, whould you like to login again?',200);
         }

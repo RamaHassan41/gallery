@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Hash;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject,MustVerifyEmail
 {
     use HasApiTokens,HasFactory,Notifiable,HasFilter;
 
@@ -27,6 +27,8 @@ class User extends Authenticatable implements JWTSubject
         'image',
         'user_name',
         'gender',
+        'code',
+        'device_token',
     ];
 
     /**
@@ -37,7 +39,7 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
-        'code',
+        'status',
     ];
 
     /**

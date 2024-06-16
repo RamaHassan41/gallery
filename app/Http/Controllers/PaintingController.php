@@ -65,7 +65,7 @@ class PaintingController extends Controller
         $createdAt=Carbon::parse($painting->creation_date);
         $timeAgo=$createdAt->diffForHumans();
         $painting->formatted_creation_date=$timeAgo;
-        $paintingDetails=$painting->loadMissing('artist','type');
+        $paintingDetails=$painting->loadMissing('artist:id,name,image','type:id,type_name');
         return $this->sendResponse([$paintingDetails,'Painting is displayed sucessfully'],200);
     }
 

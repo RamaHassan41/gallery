@@ -21,6 +21,8 @@ return new class extends Migration
             $table->binary('image')->nullable();
             $table->enum('gender',['male','female'])->nullable();
             $table->string('code')->nullable();
+            $table->text('device_token')->nullable();
+            $table->enum('status',['active','blocked'])->default('active');
             $table->rememberToken();
             $table->timestamps();
         });

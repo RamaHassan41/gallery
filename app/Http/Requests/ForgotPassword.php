@@ -6,7 +6,8 @@ use App\Traits\GeneralTrait;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-class PasswordNewRequest extends FormRequest
+
+class ForgotPassword extends FormRequest
 {
     use GeneralTrait;
 
@@ -27,8 +28,6 @@ class PasswordNewRequest extends FormRequest
     {
         return [
             'email'=>'required|string|email',
-            'password'=>'required|min:8',
-            'c_password'=>'required|same:password',
         ];
     }
 

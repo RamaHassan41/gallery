@@ -51,7 +51,7 @@ class ReliabilityCertificateController extends Controller
         ->with('artist',function($query){
             $query->select('id','name','image');
         })->get();
-        if(!$certificates){
+        if($certificates->isEmpty()){
             return $this->sendResponse('No certificates are exist to display',200);
         }
         foreach($certificates as $certificate){
@@ -71,9 +71,7 @@ class ReliabilityCertificateController extends Controller
         $createdAt=Carbon::parse($certificate->send_date);
         $timeAgo=$createdAt->diffForHumans();
         $certificate->formatted_creation_date=$timeAgo;
-        $certificateDetails=$certificate->with('artist',function($query){
-            $query->select('id','name','image');
-        })->get();
+        $certificateDetails=$certificate->loadMissing(['artist:id,name,image']);
         return $this->sendResponse([$certificateDetails,'Reliability certificate is displayed successfully'],200);
     }
 
@@ -86,7 +84,7 @@ class ReliabilityCertificateController extends Controller
         $certificate->save();
         //$artist=$certificate->artist;
         $artist=$certificate->artist()->first();
-        $artist->status='active';
+        $artist->status='activeAsArtist';
         $artist->save();
         return $this->sendResponse([$certificate,'Certificate is accepted successfully'],200);
     }
@@ -95,6 +93,9 @@ class ReliabilityCertificateController extends Controller
         $certificate=Reliability_Certificate::find($id);
         if(!$certificate){
             return $this->sendError('Certificate is not found',404);
+        }
+        if($certificate->status=='accepted'){
+            return $this->sendError('This certificate is accepted',400);
         }
         $this->deleteImage($certificate->image);
         $this->deleteImage($certificate->personal_image);

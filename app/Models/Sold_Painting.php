@@ -10,17 +10,17 @@ class Sold_Painting extends Model
 {
     use HasFactory,HasFilter;
 
+    protected $table='sold_paintings';
+    
     protected $fillable = [
-        'painting_name',
-        'price',
+        'painting_id',
         'sell_date',
-        'artist_id',
         'user_id',
     ];
 
-    public function artist()
+    public function painting()
     {
-        return $this->belongsTo(Artist::class);
+        return $this->belongsTo(Painting::class);
     }
 
     public function user()

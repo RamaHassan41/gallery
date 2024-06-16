@@ -35,6 +35,9 @@ class FollowController extends Controller
         if(!$artist){
             return $this->sendError('Account is not found',404);
         }
+        if($artist->status!='activeAsArtist'){
+            return $this->sendError('You can not follow this artist now',400);
+        }
         $user=Auth::guard('api')->user();
         $follow=$user->followings()->where('followed_id',$followed_id)
         ->where('follower_type','App\\Models\\User')->first();
@@ -57,6 +60,9 @@ class FollowController extends Controller
         $artist=Artist::find($followed_id);
         if(!$artist){
             return $this->sendError('Account is not found',404);
+        }
+        if($artist->status!='activeAsArtist'){
+            return $this->sendError('You can not follow this artist now',400);
         }
         $follower_artist=Auth::guard('artist_api')->user();
         $follow=$follower_artist->followings()->where('followed_id',$followed_id)

@@ -16,36 +16,20 @@ class PurchaseOrderController extends Controller
 
     public function showPurchaseOrders(){
         $artist=Auth::guard('artist_api')->user();
-        $paintingsWithPurchaseOrders = $artist->paintings()->get();
-
-        if($paintingsWithPurchaseOrders->isEmpty()){
+        $paintingsWithOrders=$artist->paintings()->has('purchase_orders')
+        //->orderByDesc('purchase_orders.order_date')
+        ->with('purchase_orders.user:id,name,image')->get();
+        if($paintingsWithOrders->isEmpty()){
             return $this->sendResponse('No purchase orders exist to display', 200);
         }
-        $purchaseOrdersWithUser=[];
-        foreach($paintingsWithPurchaseOrders as $painting){
-            if($painting->purchase_orders->isNotEmpty()) {
-                foreach ($painting->purchase_orders as $order) {
-                    //$user_info = $order->user;
-                    $purchaseOrdersWithUser[] = [
-                        'painting_info' => $painting,
-                        'user_info' => $order->user,
-                    ];
-                }
+        foreach($paintingsWithOrders as $purchase_order){
+            foreach($purchase_order->purchase_orders as $order){
+                $createdAt=Carbon::parse($order->order_date);
+                $timeAgo=$createdAt->diffForHumans();
+                $order->formatted_creation_date=$timeAgo;
             }
         }
-    return $this->sendResponse($purchaseOrdersWithUser, 200);
-
-
-
-
-
-
-        foreach($purchase_orders as $purchase_order){
-            $createdAt=Carbon::parse($purchase_order->order_date);
-            $timeAgo=$createdAt->diffForHumans();
-            $purchase_order->formatted_creation_date=$timeAgo;
-        }
-        return $this->sendResponse([$purchase_orders,'Purchase orders are displayed successfully'],200);
+        return $this->sendResponse([$paintingsWithOrders,'Purchase orders are displayed successfully'],200);
     }
 
     public function changeOrder($painting_id){
@@ -54,6 +38,10 @@ class PurchaseOrderController extends Controller
             return $this->sendError('Painting is not found',404);
         }
         $user=Auth::guard('api')->user();
+        $acceptedOrder=$painting->purchase_orders()->where('status','accepted')->first();
+        if($acceptedOrder){
+            return $this->sendError('An purchase order for this painting is already accepted', 400);
+        }
         $purchase_order=$user->purchase_orders()->where('painting_id',$painting_id)->first();
         if($purchase_order){
             $purchase_order->delete();
@@ -76,14 +64,20 @@ class PurchaseOrderController extends Controller
         if($painting->artist_id!=$artist->id){
             return $this->sendError('Unauthorized',401);
         }
+        $acceptedOrder=$painting->purchase_orders()->where('status','accepted')->first();
+        if($acceptedOrder){
+            return $this->sendError('An purchase order for this painting is already accepted',400);
+        }       
         $order->status='accepted';
         $order->save();
-        $soldPainting=$artist->sold_paintings()->create([
-            'painting_name'=>$painting->title,
-            'price'=>$painting->price,
+        $soldPainting=$painting->sold_paintings()->create([
             'sell_date'=>now()->toDateTimeString(),
             'user_id'=>$order->user_id,
         ]);
+        $otherOrders=$painting->purchase_orders()->where('id','!=',$order_id)->get();
+        foreach($otherOrders as $otherOrder){
+            $otherOrder->delete();
+        }
         return $this->sendResponse([$order,'Purchase order is accepted successfully'],200);
     }
 
@@ -96,6 +90,9 @@ class PurchaseOrderController extends Controller
         $painting=$order->painting;
         if($painting->artist_id!=$artist->id){
             return $this->sendError('Unauthorized',401);
+        }
+        if($order->status=='accepted'){
+            return $this->sendError('This order is accepted',400);
         }
         $order->delete();
         return $this->sendResponse([$order,'Purchase order is rejected and deleted successfully'],200);

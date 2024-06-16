@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
@@ -11,7 +11,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Hash;
 //use Illuminate\Database\Eloquent\Model;
 
-class Admin extends Authenticatable implements JWTSubject
+class Admin extends Authenticatable implements JWTSubject,MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
     //protected $guard_name='admin_api';
@@ -24,6 +24,8 @@ class Admin extends Authenticatable implements JWTSubject
         'image',
         'user_name',
         'gender',
+        'code',
+        'device_token',
     ];
 
     /**
@@ -34,7 +36,6 @@ class Admin extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
-        'code',
     ];
 
     /**

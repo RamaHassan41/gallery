@@ -67,5 +67,12 @@ class Kernel extends HttpKernel
         'jwt' => \App\Http\Middleware\JwtMiddleware::class,
         'assign' => \App\Http\Middleware\AssignMiddleware::class,
         'multiGuard' => \App\Http\Middleware\MultiGuardMiddleware::class,
+        //'active' => \App\Http\Middleware\ActiveMiddleware::class,
+        'activeUser' => \App\Http\Middleware\ActiveUserMiddleware::class,
+        'activeArtist' => \App\Http\Middleware\ActiveArtistMiddleware::class,
+        'multiActiveArtist' => \App\Http\Middleware\MultiActiveArtistMiddleware::class,
+        'verifiedUser' => \App\Http\Middleware\EmailVerifyMiddleware::class,
+        'verifiedArtist' => \App\Http\Middleware\ArtistEmailVerifyMiddleware::class,
+        'verifiedAdmin' => \App\Http\Middleware\AdminEmailVerifyMiddleware::class,
     ];
 }

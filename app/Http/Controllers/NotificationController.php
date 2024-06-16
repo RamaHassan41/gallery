@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\Request;
-
+use App\Notifications\EmailVerificationNotification;
 class NotificationController extends Controller
 {
     /**
@@ -12,7 +12,10 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        //
+        $user=auth()->guard('api')->user();
+        $user->notify(new EmailVerificationNotification());
+        return ('success');
+
     }
 
     /**

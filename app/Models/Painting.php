@@ -82,4 +82,9 @@ class Painting extends Model
     {
         return $this->belongsTo(Type::class);
     }
+
+    public function sold_paintings()
+    {
+        return $this->hasOne(Sold_Painting::class,'painting_id','id');
+    }
 }

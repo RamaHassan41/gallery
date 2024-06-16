@@ -18,29 +18,31 @@ class AssignMiddleware extends BaseMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next, $guard = null)
+    public function handle($request, Closure $next, $guard = null) 
     {
-        if($guard != null){
+        if($guard!=null){
             auth()->shouldUse($guard); //should you user guard / table
             try {
                 JWTAuth::parseToken()->authenticate();
-                $user = Auth::guard($guard)->user();
+                $user=Auth::guard($guard)->user();
                 if($user==null)
                     return $this->sendError('Unauthorized User',401);
                 else
                     return $next($request);
-            }catch (Exception $e) {
-                if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
+            }
+            catch(Exception $e){
+                if($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
                     return $this->sendError('Token is invalid',422);
-
-                }else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
+                }
+                else if($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
                     return $this->sendError('Token is expired',400);
-
-                }else{
+                }
+                else{
                     return $this->sendError('Token is not found',404);
                 }
             }
-        }else{
+        }
+        else{
             return $this->sendError('Not allowed',401);
         }
     }

@@ -15,9 +15,6 @@ class Reliability_Certificate extends Model
         'another_image',
         'send_date',
         'artist_id',
-    ];
-
-    public $hidden = [
         'status',
     ];
 

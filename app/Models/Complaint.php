@@ -16,9 +16,6 @@ class Complaint extends Model
         'reporter_type',
         'reported_id',
         'reported_type',
-    ];
-
-    public $hidden = [
         'status',
     ];
 

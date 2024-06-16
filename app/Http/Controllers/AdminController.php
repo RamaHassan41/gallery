@@ -10,6 +10,8 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\EditProfileRequest;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmailVerificationMail;
 
 class AdminController extends Controller
 {
@@ -20,13 +22,15 @@ class AdminController extends Controller
             'name'=>$request->name,
             'email'=>$request->email,
             'password'=>$request->password,
+            'code'=>rand(100000,999999),
         ]);
         $credentials=['email'=>$request->email,'password'=>$request->password];
         $token=JWTAuth::fromUser($admin);
         $admin->token=$token;
         if(!$token)
             return $this->sendError('Unauthorized',401);
-        return $this->sendResponse([$admin,'Register is done successfully'],200);
+        Mail::to($admin->email)->send(new EmailVerificationMail($admin->name,$admin->code));
+        return $this->sendResponse([$admin,'Register is done successfully. Email verification code is sent to your email'],200);
     }
 
     public function adminEditProfile(EditProfileRequest $request){
@@ -54,13 +58,22 @@ class AdminController extends Controller
         if(!$token)
             return $this->sendError('Account is Not found',404);
         $admin=Auth::guard('admin_api')->user();
+        $admin->email_verified_at=null;
+        $admin->code=rand(100000, 999999);
+        $admin->save();
         $admin->token=$token;
-        return $this->sendResponse([$admin,'Login id done successfully'],200);
+        // $admin->token=$token;
+        // $admin->code=rand(100000,999999);
+        Mail::to($admin->email)->send(new EmailVerificationMail($admin->name,$admin->code));
+        return $this->sendResponse([$admin,'Login id done successfully. Email verification code is sent to your email'],200);
     }
 
     public function adminLogout(Request $request){
         $token=$request->bearerToken();
         if($token){
+            // $admin=Auth::guard('admin_api')->user();
+            // $admin->email_verified_at=null;
+            // $admin->save();
             JWTAuth::setToken($token)->invalidate();
             return $this->sendResponse('Logout is done successfully, whould you like to login again?',200);
         }

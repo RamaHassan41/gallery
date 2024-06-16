@@ -24,7 +24,9 @@ return new class extends Migration
             $table->text('biography')->nullable();
             $table->enum('gender',['male','female'])->nullable();
             $table->string('code')->nullable();
-            $table->enum('status',['active','inactive'])->default('inactive');
+            $table->text('device_token')->nullable();
+            $table->enum('status',['activeAsUser','activeAsArtist','blocked'])
+            ->default('activeAsUser');
             $table->integer('followers_number')->default(0);
             $table->integer('rates_number')->default(0);
             $table->rememberToken();

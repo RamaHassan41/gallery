@@ -11,7 +11,7 @@ use App\Models\Complaint;
 use Illuminate\Http\Request;
 use App\Http\Requests\ComplaintRequest;
 use Illuminate\Support\Facades\Auth;
-use\Carbon\Carbon;
+use Carbon\Carbon;
 
 class ComplaintController extends Controller
 {
@@ -128,10 +128,8 @@ class ComplaintController extends Controller
         public function showComplaints()
     {
         $complaints=Complaint::orderByDesc('date')
-        ->with('reporter',function($query){
-            $query->select('id','name','image');
-        })->get();
-        if(!$complaints){
+        ->with(['reporter:id,name,image','reported:id,title,url,artist_id'])->get();
+        if($complaints->isEmpty()){
             return $this->sendResponse('No complaints are exist to display',200);
         }
         foreach($complaints as $complaint){
@@ -147,14 +145,10 @@ class ComplaintController extends Controller
         if(!$complaint){
             return $this->sendError('Complaint is not found',404);
         }
+        $complaintDetails=$complaint->loadMissing(['reporter:id,name,image','reported:id,title,url,artist_id']);
         $createdAt=Carbon::parse($complaint->date);
         $timeAgo=$createdAt->diffForHumans();
         $complaint->formatted_creation_date=$timeAgo;
-        $complaintDetails=$complaint->with(['reporter',function($query){
-            $query->select('id','name','image');
-        },'reported',function($query){
-            $query->select('id','title','url','artist_id');
-        }])->get();
         return $this->sendResponse([$complaintDetails,'Complaint is displayed successfully'],200);
     } 
 
@@ -182,6 +176,9 @@ class ComplaintController extends Controller
             return $this->sendError('Complaint is not found',404);
         }
         // $reported=$complaint->reported;
+        if($complaint->status=='accepted'){
+            return $this->sendError('This complaint is accepted',400);
+        }
         $reported=$complaint->reported()->first();
         $complaint->delete();
         $reported->reports_number--;

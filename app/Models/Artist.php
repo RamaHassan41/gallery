@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-//use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 //use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +12,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Artist extends Authenticatable implements JWTSubject
+class Artist extends Authenticatable implements JWTSubject,MustVerifyEmail
 
 {
     use HasApiTokens, HasFactory, Notifiable, HasFilter;
@@ -31,6 +31,8 @@ class Artist extends Authenticatable implements JWTSubject
         'gender',
         'rates_number',
         'followers_number',
+        'code',
+        'device_token',
     ];
 
     /**
@@ -42,7 +44,6 @@ class Artist extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
         'status',
-        'code',
     ];
 
     /**
@@ -93,10 +94,10 @@ class Artist extends Authenticatable implements JWTSubject
         return $this->hasMany(PDFFile::class,'artist_id','id');
     }
 
-    public function sold_paintings()
-    {
-        return $this->hasMany(Sold_Painting::class,'artist_id','id');
-    }
+    // public function sold_paintings()
+    // {
+    //     return $this->hasMany(Sold_Painting::class,'artist_id','id');
+    // }
 
     public function certificates()
     {

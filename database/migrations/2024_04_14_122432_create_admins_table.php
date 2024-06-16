@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->enum('gender',['male','female'])->nullable();
             $table->string('code')->nullable();
+            $table->text('device_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

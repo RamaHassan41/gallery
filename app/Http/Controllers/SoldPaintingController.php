@@ -1,65 +1,37 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Traits\GeneralTrait;
 use App\Models\Sold_Painting;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class SoldPaintingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use GeneralTrait;
+
     public function index()
     {
-        //
-    }
+        // $sold_paintings=Sold_Painting::orderByDesc('sell_date')
+        // ->with(['painting',function($query){
+        //     $query->select('id','title','url');
+        // },'user',function($query){
+        //     $query->select('id','name','image');
+        // }])->get();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Sold_Painting $sold_Painting)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Sold_Painting $sold_Painting)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Sold_Painting $sold_Painting)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Sold_Painting $sold_Painting)
-    {
-        //
+        $sold_paintings=Sold_Painting::orderByDesc('sell_date')
+        ->with(['painting:id,title,url,artist_id','user:id,name,image'])->get();
+        if(!$sold_paintings){
+            return $this->sendResponse('No sold paintings are exist to display',200);
+        }
+        if(!$sold_paintings){
+            return $this->sendResponse('No sold paintings are exist to display',200);
+        }
+        foreach($sold_paintings as $sold_painting){
+            $soldAt=Carbon::parse($sold_painting->sell_date);
+            $timeAgo=$soldAt->diffForHumans();
+            $sold_painting->formatted_selling_date=$timeAgo;
+        }
+        return $this->sendResponse([$sold_paintings,'Sold paintings are displayed successfully'],200);
     }
 }

@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sold__paintings', function (Blueprint $table) {
+        Schema::create('sold_paintings', function (Blueprint $table) {
             $table->id();
-            $table->string('painting_name');
-            $table->float('price');
             $table->dateTime('sell_date')->format('Y/m/d H:i:s');
-            $table->unsignedBigInteger('artist_id');
-            $table->foreign('artist_id')->references('id')->on('artists')
+            $table->unsignedBigInteger('painting_id');
+            $table->foreign('painting_id')->references('id')->on('paintings')
                     ->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sold__paintings');
+        Schema::dropIfExists('sold_paintings');
     }
 };

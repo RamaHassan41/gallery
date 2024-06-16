@@ -14,26 +14,52 @@ class EmailVerificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $data;
+    //public $data;
+
+    public $name,$verificationCode;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($data)
+    // public function __construct($data)
+    // {
+    //     $this->data = $data;
+    // }
+
+    public function __construct($name,$verificationCode)
     {
-        $this->data = $data;
+        $this->name=$name;
+        $this->verificationCode = $verificationCode;
     }
 
     /**
      * Get the message envelope.
      */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'Test Mail',
-            from: new Address('test@mail.dev','Test Mail'),
-        );
-    }
+    // public function envelope(): Envelope
+    // {
+    //     return new Envelope(
+    //         subject: 'Test Mail',
+    //         from: new Address('test@mail.dev', 'Test Mail'),
+    //     );
+    // }
+
+    // public function envelope(): Envelope
+    // {
+    //     return new Envelope(
+    //         subject: 'Email verification',
+    //         //from: new Address('test@mail.dev', 'Test Mail'),
+    //         view: 'emailVerification',
+    //         with:(['verificationCode' => $this->verificationCode]),
+    //     );
+    // }
+    // public function build()
+    // {
+    //     return $this->subject('Email Verification Code')
+    //                 ->view('emailVerification')
+    //                 ->with([
+    //                     'verificationCode' => $this->verificationCode
+    //                 ]);
+    // }
 
     /**
      * Get the message content definition.
@@ -41,7 +67,8 @@ class EmailVerificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'test-mail',
+            view: 'emailVerification',
+            with:(['name' => $this->name, 'verificationCode' => $this->verificationCode]),
         );
     }
 

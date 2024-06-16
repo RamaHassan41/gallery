@@ -13,9 +13,6 @@ class Purchase_Order extends Model
         'order_date',
         'painting_id',
         'user_id',
-    ];
-
-    public $hidden = [
         'status',
     ];
 

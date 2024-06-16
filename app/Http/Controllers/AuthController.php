@@ -10,28 +10,31 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\EditProfileRequest;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Notifications\EmailVerificationNotification;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmailVerificationMail;
 
 class AuthController extends Controller
 {
     use GeneralTrait;
+
     public function userRegister(RegisterRequest $request)
     {
         $user=User::create([
             'name'=>$request->name,
             'email'=>$request->email,
             'password'=>$request->password,
+            'code'=>rand(100000,999999),
         ]);
         $credentials=['email'=>$request->email,'password'=>$request->password];
         $token=JWTAuth::fromUser($user);
         $user->token=$token;
         if(!$token)
             return $this->sendError('Unauthorized',401);
-        //$user->notify(new EmailVerificationNotification());
         $user->favourite()->create([
             'user_type'=>'App\\Models\\User',
         ]);
-        return $this->sendResponse([$user,'Register is done successfully'],200);
+        Mail::to($user->email)->send(new EmailVerificationMail($user->name,$user->code));
+        return $this->sendResponse([$user,'Register is done successfully. Email verification code is sent to your email'],200);
     }
 
     public function userEditProfile(EditProfileRequest $request){
@@ -59,13 +62,21 @@ class AuthController extends Controller
         if(!$token)
             return $this->sendError('Account is Not found',404);
         $user=Auth::guard('api')->user();
+        //$user->token=$token; 
+        $user->email_verified_at=null;
+        $user->code=rand(100000, 999999);
+        $user->save();
         $user->token=$token;
-        return $this->sendResponse([$user,'Login id done successfully'],200);
+        Mail::to($user->email)->send(new EmailVerificationMail($user->name,$user->code));
+        return $this->sendResponse([$user,'Login id done successfully. Email verification code is sent to your email'],200);
     }
 
     public function userLogout(Request $request){
         $token=$request->bearerToken();
         if($token){
+            //$user=Auth::guard('api')->user();
+            // $user->email_verified_at=null;
+            // $user->save();
             JWTAuth::setToken($token)->invalidate();
             return $this->sendResponse('Logout is done successfully, whould you like to login again?',200);
         }
@@ -85,4 +96,27 @@ class AuthController extends Controller
         $user=Auth::guard('api')->user();
         return $this->sendResponse([$user,'Profile is displayed successfully'],200);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
